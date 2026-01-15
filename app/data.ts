@@ -12,7 +12,7 @@ export interface User {
 }
 
 // 2. Create the mock data store
-// We use a Record (dictionary) where the key is the "slug" (username)
+// We use a Record (dictionary) where the key is the "username"
 export const users: Record<string, User> = {
   gui: {
     name: "Gui",
