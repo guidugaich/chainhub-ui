@@ -16,16 +16,16 @@ export default function Home() {
         One link for everything you are.
       </p>
 
-      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
+      <div className="flex flex-col gap-4 w-full max-w-sm items-center">
         {/* Create Account Button (Primary) */}
         <Link 
           href="/signup"
           className="
-            flex-1 group relative px-8 py-4 rounded-full
+            w-full group relative px-8 py-4 rounded-full
             bg-white text-black font-semibold text-lg
             transition-all duration-300
             hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]
-            active:scale-95 text-center
+            active:scale-95 text-center inline-flex items-center justify-center
           "
         >
           Create your Hub
@@ -35,12 +35,12 @@ export default function Home() {
         <Link 
           href="/login"
           className="
-            flex-1 px-8 py-4 rounded-full
+            w-full px-8 py-4 rounded-full
             bg-white/10 text-white font-semibold text-lg
             backdrop-blur-md border border-white/10
             transition-all duration-300
             hover:bg-white/20 hover:scale-105
-            active:scale-95 text-center
+            active:scale-95 text-center inline-flex items-center justify-center
           "
         >
           Login
