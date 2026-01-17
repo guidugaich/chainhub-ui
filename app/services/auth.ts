@@ -1,8 +1,6 @@
-// Auth API client
-// Note: This duplicates some constants from api.ts to avoid circular dependencies if we split files later.
-// A better approach would be a shared config file.
+import { API_BASE_URL } from "../config";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+// Auth API client
 
 export interface AuthResponse {
   token: string;

@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, logout, getUser } from "../../services/auth";
 import { ApiLink } from "../../services/api";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import { API_BASE_URL } from "../../config";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -31,35 +30,17 @@ export default function DashboardPage() {
 
     if (user?.username) {
       setUsername(user.username);
+      fetchLinks(token, user.username);
+      return;
     }
 
-    fetchLinks(token);
+    setError("Missing username for fetching links");
+    setIsLoading(false);
   }, [router]);
 
-  const fetchLinks = async (token: string) => {
+  const fetchLinks = async (token: string, userName: string) => {
     try {
-      // Note: The backend requires a tree_id param for listing links, 
-      // but usually a user dashboard just wants "my links".
-      // Assuming for now the backend might support fetching user's links or we need to fetch the user's tree first.
-      // Based on spec: "GET /links?tree_id=123"
-      // We need to know the user's tree ID. 
-      // For now, I'll assume we might need to get the user's tree first or the backend handles getting my tree.
-      // Let's try fetching the tree for the current user first if possible, OR
-      // if the spec allows, maybe GET /links without tree_id returns user's links?
-      // Strict spec says: "400 tree_id missing/invalid"
-      
-      // TEMPORARY WORKAROUND: We need the tree ID. 
-      // Since /login returns user info but not tree info, we have a gap.
-      // I will assume for this step that we can fetch the user's tree via their username if we knew it.
-      // But we only have email. 
-      // 
-      // Let's try to fetch links with a hardcoded ID for testing or assume the backend was updated to be smarter.
-      // If the backend strictly enforces tree_id, we are blocked without it.
-      
-      // Let's assume the user has tree_id=1 for now to make progress, 
-      // or check if there's an endpoint to get "my tree".
-      
-      const res = await fetch(`${API_BASE_URL}/links?tree_id=1`, {
+      const res = await fetch(`${API_BASE_URL}/links?username=${encodeURIComponent(userName)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
