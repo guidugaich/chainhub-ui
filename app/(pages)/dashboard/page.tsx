@@ -75,7 +75,6 @@ export default function DashboardPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          tree_id: 1, // hardcoded for now as discussed above
           title: newLinkTitle,
           url: newLinkUrl,
           position: links.length,
