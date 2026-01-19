@@ -17,6 +17,12 @@ export default function DashboardPage() {
   const [newLinkTitle, setNewLinkTitle] = useState("");
   const [newLinkUrl, setNewLinkUrl] = useState("");
   const [isAdding, setIsAdding] = useState(false);
+  
+  // Edit link form state
+  const [editingLinkId, setEditingLinkId] = useState<number | null>(null);
+  const [editLinkTitle, setEditLinkTitle] = useState("");
+  const [editLinkUrl, setEditLinkUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   // Check auth and fetch links
   useEffect(() => {
@@ -113,6 +119,60 @@ export default function DashboardPage() {
     }
   };
 
+  const startEdit = (link: ApiLink) => {
+    setEditingLinkId(link.id);
+    setEditLinkTitle(link.title);
+    setEditLinkUrl(link.url);
+  };
+
+  const cancelEdit = () => {
+    setEditingLinkId(null);
+    setEditLinkTitle("");
+    setEditLinkUrl("");
+  };
+
+  const handleUpdateLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingLinkId === null) return;
+
+    const token = getToken();
+    if (!token) return;
+
+    const existingLink = links.find((l) => l.id === editingLinkId);
+    if (!existingLink) return;
+
+    setIsSaving(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/links/${editingLinkId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: editLinkTitle,
+          url: editLinkUrl,
+          position: existingLink.position,
+          is_active: existingLink.is_active ?? true,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update link");
+
+      const updatedLink = await res.json();
+      setLinks(
+        links.map((l) =>
+          l.id === editingLinkId ? { ...l, ...updatedLink } : l
+        )
+      );
+      cancelEdit();
+    } catch (err) {
+      alert("Failed to update link");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (isLoading) return <div className="p-8 text-center">Loading dashboard...</div>;
 
   return (
@@ -169,16 +229,63 @@ export default function DashboardPage() {
                 key={link.id} 
                 className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group"
               >
-                <div>
-                  <h3 className="font-semibold">{link.title}</h3>
-                  <p className="text-sm text-white/50">{link.url}</p>
-                </div>
-                <button 
-                  onClick={() => handleDelete(link.id)}
-                  className="text-red-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-300"
-                >
-                  Delete
-                </button>
+                {editingLinkId === link.id ? (
+                  <form onSubmit={handleUpdateLink} className="flex-1">
+                    <div className="flex flex-col gap-2">
+                      <input
+                        type="text"
+                        required
+                        value={editLinkTitle}
+                        onChange={(e) => setEditLinkTitle(e.target.value)}
+                        className="bg-black/20 border border-white/10 rounded-lg p-2 outline-none focus:border-blue-500"
+                      />
+                      <input
+                        type="url"
+                        required
+                        value={editLinkUrl}
+                        onChange={(e) => setEditLinkUrl(e.target.value)}
+                        className="bg-black/20 border border-white/10 rounded-lg p-2 outline-none focus:border-blue-500"
+                      />
+                    </div>
+                    <div className="flex items-center gap-3 mt-3">
+                      <button
+                        type="submit"
+                        disabled={isSaving}
+                        className="text-sm bg-blue-600 text-white px-3 py-1 rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      >
+                        {isSaving ? "Saving..." : "Save"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        className="text-sm text-white/70 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div>
+                      <h3 className="font-semibold">{link.title}</h3>
+                      <p className="text-sm text-white/50">{link.url}</p>
+                    </div>
+                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => startEdit(link)}
+                        className="text-blue-300 hover:text-blue-200"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(link.id)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
             {links.length === 0 && (
